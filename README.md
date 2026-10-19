@@ -75,13 +75,7 @@ Escolhemos isso porque um marketplace precisa mostrar preço e economia com clar
 
 ## 5. Dificuldades
 
-**1. Erros vermelhos de `navigation` e `icons` ao colar os arquivos**
-Depois de colocar os arquivos no projeto, o Android Studio mostrou dezenas de erros "Unresolved reference" (`navigation`, `rememberNavController`, `Icons`). Achamos que o código estava errado, mas o problema era que o projeto não tinha a biblioteca de navegação e o Gradle ainda não tinha sido sincronizado. Resolvemos adicionando `implementation("androidx.navigation:navigation-compose:2.8.5")` no `build.gradle.kts (Module :app)`, clicando em **Sync Now** e adicionando também a dependência de ícones (`material-icons-core`). Aprendemos que o Gradle precisa ser sincronizado sempre que o arquivo de dependências muda.
-
-**2. O app não abria: "No target device found"**
-Ao clicar em Run, apareceu o erro "No target device found" e o app não abria. Percebemos que não havia nenhum emulador nem celular conectado (o topo mostrava "No Devices"). Resolvemos criando um emulador pelo **Device Manager** (Create Virtual Device) e ligando ele antes de rodar o app.
-
-**3. Produto adicionado não aparecia na lista (cada tela com seu próprio estado)**
+**1. Produto adicionado não aparecia na lista (cada tela com seu próprio estado)**
 No começo, cada tela criava a sua própria lista com `mutableStateListOf`. Na tela "Novo produto" o cadastro funcionava e não dava nenhum erro, mas ao voltar para a lista o produto novo não estava lá. A mesma coisa acontecia com o carrinho: o que era adicionado no detalhe do produto não aparecia na aba Carrinho. Demoramos para entender porque parecia que o código de adicionar estava certo. O problema era que cada tela tinha uma **cópia separada** da lista, e ao navegar o Compose recriava a tela e a lista voltava ao valor inicial. Resolvemos criando a classe `LojaState`, que guarda `produtos`, `categorias` e `carrinho` em um só lugar. Ela é criada uma única vez no `NavHost` e passada para todas as telas. Depois disso, adicionar ou remover em uma tela atualiza as outras (inclusive remover um produto também tira ele do carrinho). Aprendemos que o estado que várias telas usam não pode ficar dentro de cada tela, e sim em um lugar comum acima delas.
 
 ## Checklist
