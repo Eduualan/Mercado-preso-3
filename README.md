@@ -74,7 +74,7 @@ Fizemos nas duas telas de detalhes, indo além de reexibir os campos:
 
 Escolhemos isso porque um marketplace precisa mostrar preço e economia com clareza, e relacionar produto e categoria mostra de verdade o uso de duas data classes.
 
-> 📸 *Prints do detalhe do produto e do detalhe da categoria (inserir aqui)*
+> 📸 | <img src="prints/descontop.png" width="220">  |  <img src="prints/categoriadetalhe2.png" width="220">  |
 
 ## 5. Dificuldades
 
