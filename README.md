@@ -20,7 +20,7 @@ No Trabalho 1 o projeto tinha apenas **3 telas** (Detalhe do produto, Carrinho e
 
 | Detalhe do produto | Carrinho | Pedido confirmado |
 |:---:|:---:|:---:|
-| <img src="prints/tela 1" width="220"> | <img src="prints/tela 2" width="220"> | <img src="prints/tela 3" width="220"> |
+| <img src="prints/tela 1.png" width="220"> | <img src="prints/tela 2.png" width="220"> | <img src="prints/tela 3.png" width="220"> |
 
 Agora o app tem **8 telas** navegáveis de verdade, com `NavHost`, `BottomNavigation`, duas listas com adicionar/remover e duas telas de detalhes que recebem o item certo.
 
