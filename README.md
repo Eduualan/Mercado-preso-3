@@ -39,7 +39,10 @@ Agora o app tem **8 telas** navegáveis de verdade, com `NavHost`, `BottomNaviga
 | 7 | **Pedido confirmado** | Resumo do pedido, com número e total reais, e botões de acompanhar/voltar | Fecha o fluxo de compra |
 | 8 | **Acompanhar pedido** | Linha do tempo com botão que simula as etapas de entrega | Dá função real ao botão "Acompanhar prisão do pedido" |
 
-> 📸 *Prints de cada tela (inserir aqui)*
+> 📸 |  <img src="prints/entrega.png" width="220"> | <img src="prints/pedidoconfirmado.png" width="220"> | <img src="prints/carrinho.png" width="220"> |
+>     | <img src="prints/categoriadetalhes.png" width="220"> | <img src="prints/categorias.png" width="220"> | <img src="prints/novoproduto.png" width="220"> |
+>     | <img src="prints/detalhesp.png" width="220"> | <img src="prints/telaprodutos.png" width="220"> |
+  
 
 ## 3. Organização do código
 
