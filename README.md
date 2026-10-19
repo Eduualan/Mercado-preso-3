@@ -14,9 +14,13 @@ Os dados ficam só na memória (`mutableStateListOf`): ao fechar o app, o que fo
 
 ## 1. Como estava o Trabalho 1 e o que mudou
 
-No Trabalho 1 o projeto tinha apenas **2 telas**, e elas eram só visuais: nada funcionava, os botões não faziam nada e não havia navegação entre as telas.
+No Trabalho 1 o projeto tinha apenas **3 telas** (Detalhe do produto, Carrinho e Pedido confirmado), e elas eram só visuais: nada funcionava, os botões não faziam nada e não havia navegação entre as telas.
 
-> 📸 *Print das telas do Trabalho 1 (inserir aqui)*
+**Telas do Trabalho 1:**
+
+| Detalhe do produto | Carrinho | Pedido confirmado |
+|:---:|:---:|:---:|
+| <img src="prints/trabalho1_detalhe_produto.png" width="220"> | <img src="prints/trabalho1_carrinho.png" width="220"> | <img src="prints/trabalho1_pedido_confirmado.png" width="220"> |
 
 Agora o app tem **8 telas** navegáveis de verdade, com `NavHost`, `BottomNavigation`, duas listas com adicionar/remover e duas telas de detalhes que recebem o item certo.
 
@@ -77,8 +81,8 @@ Depois de colocar os arquivos no projeto, o Android Studio mostrou dezenas de er
 **2. O app não abria: "No target device found"**
 Ao clicar em Run, apareceu o erro "No target device found" e o app não abria. Percebemos que não havia nenhum emulador nem celular conectado (o topo mostrava "No Devices"). Resolvemos criando um emulador pelo **Device Manager** (Create Virtual Device) e ligando ele antes de rodar o app.
 
-**3. Organização dos arquivos e do pacote**
-Tivemos dúvida sobre onde colocar os arquivos novos. Descobrimos que todos precisam ficar na mesma pasta de pacote (`com.example.mercadopreso`) e que a primeira linha `package` de cada arquivo deve bater com ela. O nome dos arquivos pode ser diferente, mas o pacote não.
+**3. Produto adicionado não aparecia na lista (cada tela com seu próprio estado)**
+No começo, cada tela criava a sua própria lista com `mutableStateListOf`. Na tela "Novo produto" o cadastro funcionava e não dava nenhum erro, mas ao voltar para a lista o produto novo não estava lá. A mesma coisa acontecia com o carrinho: o que era adicionado no detalhe do produto não aparecia na aba Carrinho. Demoramos para entender porque parecia que o código de adicionar estava certo. O problema era que cada tela tinha uma **cópia separada** da lista, e ao navegar o Compose recriava a tela e a lista voltava ao valor inicial. Resolvemos criando a classe `LojaState`, que guarda `produtos`, `categorias` e `carrinho` em um só lugar. Ela é criada uma única vez no `NavHost` e passada para todas as telas. Depois disso, adicionar ou remover em uma tela atualiza as outras (inclusive remover um produto também tira ele do carrinho). Aprendemos que o estado que várias telas usam não pode ficar dentro de cada tela, e sim em um lugar comum acima delas.
 
 ## Checklist
 
