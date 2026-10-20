@@ -15,11 +15,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,9 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 // ============ TELA 4: LISTA DE CATEGORIAS (aba) ============
@@ -46,7 +43,11 @@ fun TelaCategorias(nav: NavController, loja: LojaState) {
         BarraTopo("Categorias")
 
         // Formulário para ADICIONAR
-        Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TituloSecao("Nova categoria")
             OutlinedTextField(nome, { nome = it }, label = { Text("Nome da categoria") },
                 singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(descricao, { descricao = it }, label = { Text("Descrição") },
@@ -65,30 +66,47 @@ fun TelaCategorias(nav: NavController, loja: LojaState) {
             ) { Text("Adicionar categoria") }
         }
 
+        if (loja.categorias.isEmpty()) {
+            EstadoVazio("Nenhuma categoria ainda", "Cadastre a primeira para organizar os produtos.")
+        }
         LazyColumn(
+            modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(loja.categorias, key = { it.id }) { categoria ->
-                Card(
-                    onClick = { nav.navigate(Rotas.detalheCategoria(categoria.id)) },
-                    colors = CardDefaults.cardColors(containerColor = CardCor),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(categoria.nome, fontWeight = FontWeight.Bold)
-                            Text(categoria.descricao, color = Cinza, fontSize = 12.sp)
-                            Text("${loja.produtosDa(categoria.id).size} produto(s)", color = Azul, fontSize = 12.sp)
+                CartaoPadrao(onClick = { nav.navigate(Rotas.detalheCategoria(categoria.id)) }) {
+                    Row(
+                        Modifier.padding(start = 16.dp, top = 14.dp, bottom = 14.dp, end = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(categoria.nome, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                categoria.descricao,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Cinza
+                            )
+                            Selo("${loja.produtosDa(categoria.id).size} produto(s)", Azul)
                         }
                         IconButton(onClick = {
                             if (!loja.removerCategoria(categoria)) {
                                 Toast.makeText(ctx, "Remova antes os produtos dessa categoria", Toast.LENGTH_SHORT).show()
                             }
-                        }) { Icon(Icons.Default.Delete, contentDescription = "Remover categoria") }
+                        }) { Icon(Icons.Default.Delete, contentDescription = "Remover categoria", tint = Cinza) }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun Estatistica(rotulo: String, valor: String, modifier: Modifier = Modifier) {
+    CartaoPadrao(modifier) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(valor, style = MaterialTheme.typography.titleLarge, color = Amarelo)
+            Text(rotulo, style = MaterialTheme.typography.bodySmall, color = Cinza)
         }
     }
 }
@@ -104,7 +122,7 @@ fun TelaDetalheCategoria(nav: NavController, loja: LojaState, id: Int) {
         BarraTopo("Detalhes da categoria", onVoltar = { nav.popBackStack() })
 
         if (categoria == null) {
-            Text("Categoria não encontrada.", Modifier.padding(16.dp), color = Cinza)
+            EstadoVazio("Categoria não encontrada", "Ela pode ter sido removida.")
             return@Column
         }
 
@@ -112,31 +130,40 @@ fun TelaDetalheCategoria(nav: NavController, loja: LojaState, id: Int) {
         val valorTotal = produtos.sumOf { it.preco }
         val media = if (produtos.isEmpty()) 0.0 else valorTotal / produtos.size
 
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(categoria.nome, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(categoria.descricao, color = Cinza)
-            Text("Produtos: ${produtos.size}", Modifier.padding(top = 8.dp))
-            Text("Valor somado do catálogo: ${valorTotal.reais()}")
-            Text("Preço médio: ${media.reais()}")
-            Text("Produtos desta categoria", fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 12.dp))
+        Column(
+            Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(categoria.nome, style = MaterialTheme.typography.headlineMedium)
+                Text(categoria.descricao, style = MaterialTheme.typography.bodyMedium, color = Cinza)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Estatistica("Produtos", "${produtos.size}", Modifier.weight(1f))
+                Estatistica("Preço médio", media.reais(), Modifier.weight(1f))
+            }
+            Estatistica("Valor somado do catálogo", valorTotal.reais())
+            TituloSecao("Produtos desta categoria", Modifier.padding(top = 4.dp))
         }
 
         if (produtos.isEmpty()) {
-            Text("Nenhum produto aqui ainda.", Modifier.padding(horizontal = 16.dp), color = Cinza)
+            Text(
+                "Nenhum produto aqui ainda.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Cinza,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
         }
         LazyColumn(
-            contentPadding = PaddingValues(16.dp, 0.dp, 16.dp, 16.dp),
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(produtos, key = { it.id }) { produto ->
-                Card(
-                    onClick = { nav.navigate(Rotas.detalheProduto(produto.id)) },
-                    colors = CardDefaults.cardColors(containerColor = CardCor),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(produto.nome, Modifier.weight(1f))
-                        Text(produto.preco.reais(), fontWeight = FontWeight.Bold)
+                CartaoPadrao(onClick = { nav.navigate(Rotas.detalheProduto(produto.id)) }) {
+                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(produto.nome, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                        Text(produto.preco.reais(), style = MaterialTheme.typography.titleLarge)
                     }
                 }
             }
