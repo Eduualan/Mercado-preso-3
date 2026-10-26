@@ -101,11 +101,6 @@ As capturas abaixo mostram a versão atual do app e foram adicionadas ao reposit
   </tr>
 </table>
 
-As capturas documentam telas e formulários, mas não comprovam sozinhas que as alterações sobrevivem ao encerramento do aplicativo. Para completar essa evidência:
-
-1. Grave um vídeo curto criando um produto, editando seu preço e removendo-o.
-2. Grave outro vídeo cadastrando um produto com um nome fácil de reconhecer, fechando completamente o app, abrindo-o novamente e mostrando que o produto continua na lista.
-3. Salve os arquivos nesta pasta, por exemplo `evidencias/crud.mp4` e `evidencias/persistencia.mp4`, ou substitua os itens abaixo por links acessíveis.
 
 - Vídeo CRUD: **pendente de gravação**.
 - Vídeo fechando e reabrindo o app: **pendente de gravação**.
