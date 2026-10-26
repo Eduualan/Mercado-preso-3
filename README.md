@@ -24,16 +24,16 @@ No Trabalho 2, o aplicativo já tinha navegação e telas de produtos, categoria
 
 No Trabalho 3, além de migrar produtos e categorias para o Room, **reformulamos a aparência de todo o aplicativo**. Atualizamos cores, cartões, cabeçalhos, navegação e formulários; criamos uma identidade visual amarela para o Mercado Preso; ampliamos o catálogo com tecnologia, moda, casa, papelaria e esporte; adicionamos fotos aos produtos, carrossel de destaques e uma tela de perfil. O cadastro também permite escolher uma foto da galeria e mantê-la salva no dispositivo.
 
-As capturas abaixo mostram como algumas telas eram no Trabalho 2. As capturas da versão atual estão mais adiante neste README, na seção de evidências.
+As capturas abaixo foram recuperadas do repositório anterior `Eduualan/Mercadopreso` (branch `master`) e mostram o aplicativo antes da reformulação. Elas foram copiadas para `evidencias/trabalho2/` para manter a comparação junto deste projeto. As capturas da versão atual estão mais adiante neste README, na seção de evidências.
 
 <table>
   <tr>
-    <td align="center"><strong>Lista de produtos — antes</strong><br><img src="prints/telaprodutos.png" width="220" alt="Lista antiga de produtos do Trabalho 2"></td>
-    <td align="center"><strong>Categorias — antes</strong><br><img src="prints/categorias.png" width="220" alt="Tela antiga de categorias do Trabalho 2"></td>
+    <td align="center"><strong>Lista de produtos — antes</strong><br><img src="evidencias/trabalho2/produtos.png" width="220" alt="Lista antiga de produtos do Trabalho 2"></td>
+    <td align="center"><strong>Categorias — antes</strong><br><img src="evidencias/trabalho2/categorias.png" width="220" alt="Tela antiga de categorias do Trabalho 2"></td>
   </tr>
   <tr>
-    <td align="center"><strong>Detalhe do produto — antes</strong><br><img src="prints/detalhesp.png" width="220" alt="Tela antiga de detalhe de produto do Trabalho 2"></td>
-    <td align="center"><strong>Carrinho — antes</strong><br><img src="prints/tela_1.png" width="220" alt="Tela antiga do carrinho do Trabalho 2"></td>
+    <td align="center"><strong>Detalhe do produto — antes</strong><br><img src="evidencias/trabalho2/detalhe-produto.png" width="220" alt="Tela antiga de detalhe de produto do Trabalho 2"></td>
+    <td align="center"><strong>Carrinho — antes</strong><br><img src="evidencias/trabalho2/carrinho.png" width="220" alt="Tela antiga do carrinho do Trabalho 2"></td>
   </tr>
 </table>
 
