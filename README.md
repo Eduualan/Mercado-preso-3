@@ -78,20 +78,39 @@ A principal decisão de persistência foi manter o estado observável que a inte
 
 O histórico do projeto não identifica qual integrante teve cada dificuldade individual. Para responder com precisão à pergunta da atividade sobre a experiência de cada pessoa, os integrantes devem acrescentar aqui um exemplo real contado por eles, sem atribuir experiências que não foram registradas.
 
-## Evidências de execução — completar antes da entrega
+## Capturas da versão atual e evidências de execução
 
-As capturas que já existem em `prints/` são registros de telas de versões anteriores do projeto e **não demonstram o teste de persistência do Trabalho 3**. Ainda é necessário gravar no emulador ou aparelho a versão atual e adicionar evidências reais:
+As capturas abaixo mostram a versão atual do app e foram adicionadas ao repositório em `evidencias/`. As imagens antigas mantidas em `prints/` são registros de versões anteriores do projeto.
 
-1. **CRUD:** grave a criação de um produto, a edição do preço e a remoção de um produto.
-2. **Persistência:** cadastre um produto com um nome fácil de reconhecer, feche completamente o app, abra-o novamente e mostre o produto ainda na lista.
-3. Salve os arquivos nesta pasta (por exemplo, `evidencias/crud.mp4` e `evidencias/persistencia.mp4`) ou adicione links acessíveis abaixo.
-4. Substitua a indicação de pendência pelos links das gravações e inclua capturas atuais da lista e do cadastro com foto.
+<table>
+  <tr>
+    <td align="center"><strong>Tela inicial e ofertas em destaque</strong><br><img src="evidencias/tela-inicial.png" width="240" alt="Tela inicial do Mercado Preso"></td>
+    <td align="center"><strong>Categorias</strong><br><img src="evidencias/tela-categorias.png" width="240" alt="Lista de categorias"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Detalhe da categoria</strong><br><img src="evidencias/detalhe-categoria.png" width="240" alt="Detalhe da categoria Esporte e Lazer"></td>
+    <td align="center"><strong>Cadastro de produto e escolha de foto</strong><br><img src="evidencias/cadastro-produto.png" width="240" alt="Formulário para cadastrar produto e escolher foto"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Carrinho</strong><br><img src="evidencias/carrinho.png" width="240" alt="Tela do carrinho"></td>
+    <td align="center"><strong>Perfil</strong><br><img src="evidencias/perfil.png" width="240" alt="Tela de perfil"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Editar dados do perfil</strong><br><img src="evidencias/editar-perfil.png" width="240" alt="Formulário de edição do perfil"></td>
+    <td align="center"></td>
+  </tr>
+</table>
+
+As capturas documentam telas e formulários, mas não comprovam sozinhas que as alterações sobrevivem ao encerramento do aplicativo. Para completar essa evidência:
+
+1. Grave um vídeo curto criando um produto, editando seu preço e removendo-o.
+2. Grave outro vídeo cadastrando um produto com um nome fácil de reconhecer, fechando completamente o app, abrindo-o novamente e mostrando que o produto continua na lista.
+3. Salve os arquivos nesta pasta, por exemplo `evidencias/crud.mp4` e `evidencias/persistencia.mp4`, ou substitua os itens abaixo por links acessíveis.
 
 - Vídeo CRUD: **pendente de gravação**.
 - Vídeo fechando e reabrindo o app: **pendente de gravação**.
-- Capturas da versão atual: **pendentes de atualização**.
 
-A apresentação também deve demonstrar ao vivo adicionar, editar, remover e fechar/reabrir o app.
+A apresentação em sala também deve demonstrar ao vivo adicionar, editar, remover e fechar/reabrir o app.
 
 ## Créditos das fotos do catálogo
 
@@ -120,6 +139,6 @@ As fotos foram redimensionadas para o app. Créditos e licenças foram registrad
 - [x] Projeto compila com `assembleDebug`.
 - [ ] Executar e gravar o CRUD no aparelho/emulador.
 - [ ] Gravar o teste de fechar e reabrir o app com os dados preservados.
-- [ ] Atualizar as capturas de tela com a versão atual.
+- [x] Adicionar capturas das telas atuais em `evidencias/`.
 - [ ] Confirmar com o trio o relato individual de dificuldade e incluí-lo acima.
 - [ ] Confirmar que o remoto GitHub é o repositório novo exigido pela atividade e revisar a entrega no Blackboard.
