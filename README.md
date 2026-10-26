@@ -122,7 +122,7 @@ As capturas abaixo mostram a versão atual do app e foram adicionadas ao reposit
 
 [Assistir ao vídeo no YouTube](https://youtu.be/7kYqOw9_61s) — demonstração do aplicativo e das operações de CRUD.
 
-A apresentação em sala também deve demonstrar ao vivo adicionar, editar, remover e fechar/reabrir o app.
+
 
 ## Créditos das fotos do catálogo
 
