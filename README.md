@@ -1,93 +1,125 @@
-# Mercado Preso — Trabalho 2
+# Mercado Preso — Trabalho 3
 
-App Android em Kotlin + Jetpack Compose: um marketplace paródia com tema de prisão ("sua compra não sai em condicional").
+Aplicativo Android de marketplace em Kotlin e Jetpack Compose. O tema é uma paródia de comércio online; o catálogo inclui tecnologia, moda, casa, papelaria e esporte. Produtos e categorias são armazenados localmente com Room/SQLite.
 
-**Integrantes:** Eduardo Alan, Francisco Caninde
+**Integrantes registrados no projeto:** Eduardo Alan e Francisco Caninde.
 
-## Como rodar
+## Como abrir e executar
 
-1. Abra a pasta do projeto no Android Studio.
-2. Aguarde o Gradle sincronizar (usa `navigation-compose` e Material3).
-3. Rode em um emulador ou celular (Run ▶ `app`).
+1. Abra esta pasta no Android Studio e aguarde a sincronização do Gradle.
+2. Selecione um emulador ou conecte um aparelho Android.
+3. Pressione **Run** para instalar e abrir o app.
 
-Os dados ficam só na memória (`mutableStateListOf`): ao fechar o app, o que foi adicionado se perde, como permitido na seção 5 do enunciado.
+Para gerar o APK de depuração no Windows, execute no terminal do Android Studio:
 
-## 1. Como estava o Trabalho 1 e o que mudou
+```powershell
+.\gradlew.bat assembleDebug
+```
 
-No Trabalho 1 o projeto tinha apenas **3 telas** (Detalhe do produto, Carrinho e Pedido confirmado), e elas eram só visuais: nada funcionava, os botões não faziam nada e não havia navegação entre as telas.
+O APK é gerado em `app/build/outputs/apk/debug/app-debug.apk`. A compilação de depuração foi concluída com sucesso em 26/10/2026. Essa confirmação é da compilação; o teste de persistência em aparelho/emulador precisa ser demonstrado separadamente, na seção de evidências.
 
-**Telas do Trabalho 1:**
+## O que mudou desde o Trabalho 2
 
-| Detalhe do produto | Carrinho | Pedido confirmado |
-|:---:|:---:|:---:|
-| <img src="prints/tela_1.png" width="220"> | <img src="prints/tela_2.png" width="220"> | <img src="prints/tela_3.png" width="220"> |
+No Trabalho 2, os produtos e as categorias eram mantidos em listas observadas pelo Compose (`mutableStateListOf`), então esses dados não eram uma fonte persistente. No Trabalho 3, essas mesmas listas de apresentação são preenchidas a partir do Room e as operações de cadastro, edição e remoção escrevem no banco local. Ao fechar e reabrir o app, os registros devem ser carregados novamente do SQLite.
 
-Agora o app tem **8 telas** navegáveis de verdade, com `NavHost`, `BottomNavigation`, duas listas com adicionar/remover e duas telas de detalhes que recebem o item certo.
+A navegação usa `NavHost`. As telas de detalhe recebem o ID do item pela rota e consultam o banco. O catálogo também ganhou categorias variadas, imagens de demonstração e seleção de foto da galeria ao cadastrar um produto. A foto selecionada é copiada para o armazenamento interno do app e o caminho fica salvo no registro.
 
-> 📸 *Print do app atual (inserir aqui)*
+O carrinho e o estado do pedido continuam em memória; não fazem parte das entidades persistidas deste trabalho.
 
-## 2. As telas e por que foram escolhidas
+## Entidades, campos e DAOs
 
-| # | Tela | O que faz | Por que existe |
-|---|------|-----------|----------------|
-| 1 | **Produtos** (aba) | Lista de produtos (`LazyColumn` + `Card`), lixeira para remover e botão "Novo produto" | Lista principal de um marketplace |
-| 2 | **Detalhe do produto** | Mostra o produto clicado, com desconto, parcela, economia, categoria, edição de preço, "Comprar agora" e "Adicionar ao carrinho" | Detalhes da lista 1 |
-| 3 | **Novo produto** | Formulário (texto, número, várias linhas, escolha de categoria) com validação | Forma de adicionar na lista 1 |
-| 4 | **Categorias** (aba) | Lista de categorias com formulário para adicionar e lixeira para remover | Segunda lista, segundo tipo de item |
-| 5 | **Detalhe da categoria** | Mostra os produtos da categoria, quantidade, valor somado e preço médio | Detalhes da lista 2 |
-| 6 | **Carrinho** (aba) | Checkbox, quantidade +/−, cupom, subtotal, frete, total e "Finalizar prisão da compra" | Já existia visualmente no Trabalho 1; agora funciona |
-| 7 | **Pedido confirmado** | Resumo do pedido, com número e total reais, e botões de acompanhar/voltar | Fecha o fluxo de compra |
-| 8 | **Acompanhar pedido** | Linha do tempo com botão que simula as etapas de entrega | Dá função real ao botão "Acompanhar prisão do pedido" |
+### `Produto` — tabela `produtos`
 
-> 📸 |  <img src="prints/entrega.png" width="220"> | <img src="prints/pedidoconfirmado.png" width="220"> | <img src="prints/carrinho.png" width="220"> |
->     | <img src="prints/categoriadetalhes.png" width="220"> | <img src="prints/categorias.png" width="220"> | <img src="prints/novoproduto.png" width="220"> |
->     | <img src="prints/detalhesp.png" width="220"> | <img src="prints/telaprodutos.png" width="220"> |
-  
+- `id`: chave primária inteira, autogerada.
+- `nome` e `vendedor`: identificação do item e de quem vende.
+- `precoOriginal` e `preco`: cálculo e apresentação de desconto.
+- `categoriaId`: ID da categoria associada ao produto.
+- `descricao`: informações mostradas no detalhe.
+- `imagemLocal`: caminho opcional da foto escolhida pelo usuário. É nulo para os produtos sem foto personalizada.
 
-## 3. Organização do código
+### `Categoria` — tabela `categorias`
 
-| Arquivo | Conteúdo |
-|---------|----------|
-| `Modelos.kt` | As data classes `Produto`, `Categoria` e `ItemCarrinho`, o objeto `Rotas` e a classe `LojaState` |
-| `MainActivity.kt` | `NavHost`, `NavController` e o `BottomNavigation` |
-| `Componentes.kt` | Tema, `BarraTopo` (com botão de voltar) e funções auxiliares |
-| `TelasProdutos.kt` | Telas 1, 2 e 3 |
-| `TelasCategorias.kt` | Telas 4 e 5 |
-| `TelasCarrinho.kt` | Telas 6, 7 e 8 |
+- `id`: chave primária inteira, autogerada.
+- `nome`: nome exibido no catálogo e nos filtros.
+- `descricao`: explicação da categoria.
 
-Decisões:
+Esses campos cobrem as informações usadas nos formulários, nas listas, no detalhe e na relação entre produto e categoria. `categoriaId` é mantido no produto para identificar sua categoria.
 
-- **Rotas num objeto `Rotas`:** evita escrever texto solto pelo código e erro de digitação. As rotas com argumento (`produto/{id}`, `categoria/{id}`) têm funções que montam o caminho.
-- **Estado em uma classe `LojaState`:** as listas (`produtos`, `categorias`, `carrinho`) são `mutableStateListOf` e ficam todas na `LojaState`, criada uma vez no `NavHost` e passada às telas. Assim, adicionar, remover ou comprar em uma tela atualiza as outras (por exemplo, remover um produto também tira ele do carrinho).
-- **Passagem de dados por `id`:** as telas de detalhes recebem só o `id` pela rota e buscam o item na lista. Por isso mostram sempre o item certo, e a tela se atualiza se o item for editado.
-- **`BottomNavigation` só nas 3 telas principais:** Produtos, Categorias e Carrinho. As telas de detalhes e formulários usam botão de voltar (`popBackStack()`).
+### Consultas e operações
 
-## 4. Complexidade extra na tela de Detalhes
+`ProdutoDao` e `CategoriaDao` têm métodos `suspend` para inserir, listar, atualizar e excluir. As listas são ordenadas pelo nome. Ambos também têm busca por ID, usada pelas respectivas telas de detalhe:
 
-Fizemos nas duas telas de detalhes, indo além de reexibir os campos:
+- Produtos: `SELECT * FROM produtos ORDER BY nome` e busca por `id`.
+- Categorias: `SELECT * FROM categorias ORDER BY nome` e busca por `id`.
 
-- **Detalhe do produto:**
-  - mostra valores **calculados** a partir dos dados (desconto em %, parcela em 6x, economia);
-  - permite **editar o preço** ali mesmo (o carrinho também é atualizado);
-  - abre uma **navegação secundária**: clicar na categoria leva ao detalhe dela.
-- **Detalhe da categoria:** **combina dados das duas listas**: lista os produtos daquela categoria e calcula quantidade, valor somado e preço médio.
+A busca por ID foi escolhida porque a navegação passa o identificador do item, em vez de carregar e transportar o objeto inteiro entre telas.
 
-Escolhemos isso porque um marketplace precisa mostrar preço e economia com clareza, e relacionar produto e categoria mostra de verdade o uso de duas data classes.
+### Banco e migração
 
-> 📸 | <img src="prints/descontop.png" width="220">  |  <img src="prints/categoriadetalhe2.png" width="220">  |
+`AppDatabase` reúne as duas entidades e expõe os DAOs por um Singleton (`companion object`, `@Volatile` e `synchronized`). A versão atual é **2**. A migração `1 → 2` acrescenta a coluna anulável `imagemLocal` com valor padrão nulo, preservando os produtos que já estavam no banco.
 
-## 5. Dificuldades
+As operações do DAO são executadas em `Dispatchers.IO`. A classe `LojaState` atualiza as listas observadas pelo Compose após as alterações no banco. As chamadas de leitura são iniciadas quando as telas de lista abrem; as telas de detalhe buscam o registro pelo ID recebido.
 
-**1. Produto adicionado não aparecia na lista (cada tela com seu próprio estado)**
-No começo, cada tela criava a sua própria lista com `mutableStateListOf`. Na tela "Novo produto" o cadastro funcionava e não dava nenhum erro, mas ao voltar para a lista o produto novo não estava lá. A mesma coisa acontecia com o carrinho: o que era adicionado no detalhe do produto não aparecia na aba Carrinho. Demoramos para entender porque parecia que o código de adicionar estava certo. O problema era que cada tela tinha uma **cópia separada** da lista, e ao navegar o Compose recriava a tela e a lista voltava ao valor inicial. Resolvemos criando a classe `LojaState`, que guarda `produtos`, `categorias` e `carrinho` em um só lugar. Ela é criada uma única vez no `NavHost` e passada para todas as telas. Depois disso, adicionar ou remover em uma tela atualiza as outras (inclusive remover um produto também tira ele do carrinho). Aprendemos que o estado que várias telas usam não pode ficar dentro de cada tela, e sim em um lugar comum acima delas.
+## Fluxos disponíveis
 
-## Checklist
+- **Produtos:** lista, busca, destaques em carrossel, cadastro, remoção e acesso ao detalhe.
+- **Cadastro de produto:** nome, vendedor, descrição, preços, categoria e foto opcional selecionada da galeria.
+- **Detalhe do produto:** preços, desconto, categoria, opções de compra e edição persistente do preço.
+- **Categorias:** lista, cadastro, remoção quando não há produtos associados e detalhes com produtos daquela categoria.
+- **Carrinho e pedido:** quantidade, subtotal, cupom, finalização e acompanhamento simulado. Esses dados são temporários em memória.
 
-- [x] 8 telas, todas navegáveis
-- [x] `BottomNavigation` funcionando
-- [x] 2 data classes diferentes e 2 telas de lista (`LazyColumn` + `Card`)
-- [x] Adicionar e remover em cada lista
-- [x] 2 telas de detalhes, cada uma com o item certo
-- [x] Detalhes com algo a mais do que o exemplo de aula
-- [x] Objeto `Rotas`
-- [x] Botão de voltar funcional (`popBackStack()`)
+Os produtos e categorias de demonstração são incluídos apenas quando não há um registro com o mesmo nome. O app não substitui os dados existentes durante a inicialização.
+
+## Dificuldades encontradas e decisões
+
+Durante a integração, o Android Studio mostrou referências de Room não resolvidas enquanto as dependências e o processador KSP ainda não estavam sincronizados. Também surgiram erros de geração KSP/Kotlin, referências a propriedades delegadas e incompatibilidades entre valores anuláveis e não anuláveis. As correções foram configurar `room-runtime`, `room-ktx` e `room-compiler` com KSP, alinhar a configuração Gradle usada pelo Kotlin integrado do Android, guardar propriedades delegadas em variáveis locais quando necessário e tratar o resultado nulo da busca por ID antes de acessar o produto. Ao final, `assembleDebug` compilou com sucesso.
+
+A principal decisão de persistência foi manter o estado observável que a interface Compose já usa, mas fazer do Room a origem dos produtos e categorias. A edição de preço consulta o registro pelo ID e usa `@Update`, preservando os demais campos. A foto é salva como arquivo privado do app e seu caminho é armazenado em `imagemLocal`; assim, não é necessário guardar uma imagem grande diretamente no SQLite nem depender de uma permissão temporária da galeria.
+
+O histórico do projeto não identifica qual integrante teve cada dificuldade individual. Para responder com precisão à pergunta da atividade sobre a experiência de cada pessoa, os integrantes devem acrescentar aqui um exemplo real contado por eles, sem atribuir experiências que não foram registradas.
+
+## Evidências de execução — completar antes da entrega
+
+As capturas que já existem em `prints/` são registros de telas de versões anteriores do projeto e **não demonstram o teste de persistência do Trabalho 3**. Ainda é necessário gravar no emulador ou aparelho a versão atual e adicionar evidências reais:
+
+1. **CRUD:** grave a criação de um produto, a edição do preço e a remoção de um produto.
+2. **Persistência:** cadastre um produto com um nome fácil de reconhecer, feche completamente o app, abra-o novamente e mostre o produto ainda na lista.
+3. Salve os arquivos nesta pasta (por exemplo, `evidencias/crud.mp4` e `evidencias/persistencia.mp4`) ou adicione links acessíveis abaixo.
+4. Substitua a indicação de pendência pelos links das gravações e inclua capturas atuais da lista e do cadastro com foto.
+
+- Vídeo CRUD: **pendente de gravação**.
+- Vídeo fechando e reabrindo o app: **pendente de gravação**.
+- Capturas da versão atual: **pendentes de atualização**.
+
+A apresentação também deve demonstrar ao vivo adicionar, editar, remover e fechar/reabrir o app.
+
+## Créditos das fotos do catálogo
+
+As imagens abaixo são fotos de referência usadas nos produtos de demonstração. Os arquivos estão em `app/src/main/res/drawable/`.
+
+- **Algemas** (`product_algemas.jpg`): Klaus with K, [Handcuffs01 2003-06-02](https://commons.wikimedia.org/wiki/File:Handcuffs01_2003-06-02.jpg), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+- **Colher** (`product_colher.jpg`): Janakiraman janaki, [Stainless steel spoon](https://commons.wikimedia.org/wiki/File:Stainless_steel_spoon.jpg), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+- **Celular** (`product_celular.jpg`): Ka Kit Pang, [Smart-Phone.jpg](https://commons.wikimedia.org/wiki/File:Smart-Phone.jpg), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+- **Tênis** (`product_tenis.jpg`): Jesse Millan, [Sneaker.jpg](https://commons.wikimedia.org/wiki/File:Sneaker.jpg), [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/).
+- **Caneca** (`product_caneca.jpg`): NNU-11-Zaclee, [Ceramic mug.jpg](https://commons.wikimedia.org/wiki/File:Ceramic_mug.jpg), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+- **Caderno** (`product_caderno.jpg`): Mattes, [Paper notebooks.jpg](https://commons.wikimedia.org/wiki/File:Paper_notebooks.jpg), domínio público conforme a página do arquivo.
+- **Bola** (`product_bola.jpg`): Petey21, [Soccer ball on ground.jpg](https://commons.wikimedia.org/wiki/File:Soccer_ball_on_ground.jpg), [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
+- **Fone de ouvido** (`product_fone.jpg`): Atorero (Alexander Kozlov), [Headphones.jpg](https://commons.wikimedia.org/wiki/File:Headphones.jpg), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+- **Mochila** (`product_mochila.jpg`): Wikisafar, [Backpack-1.jpg](https://commons.wikimedia.org/wiki/File:Backpack-1.jpg), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+- **Relógio** (`product_relogio.jpg`): J.Doniyorovich, [Wrist watchs.jpg](https://commons.wikimedia.org/wiki/File:Wrist_watchs.jpg), [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
+
+As fotos foram redimensionadas para o app. Créditos e licenças foram registrados para cada arquivo; a foto escolhida no cadastro pelo usuário é fornecida por ele.
+
+## Checklist de entrega
+
+- [x] Dependências Room e KSP configuradas.
+- [x] Duas entidades com chave primária autogerada.
+- [x] Dois DAOs com operações básicas `suspend` e consultas filtradas por ID.
+- [x] `AppDatabase` Singleton com migração para a coluna da foto.
+- [x] Listas e detalhes consultam o banco; cadastro, edição de preço e remoção persistem.
+- [x] Projeto compila com `assembleDebug`.
+- [ ] Executar e gravar o CRUD no aparelho/emulador.
+- [ ] Gravar o teste de fechar e reabrir o app com os dados preservados.
+- [ ] Atualizar as capturas de tela com a versão atual.
+- [ ] Confirmar com o trio o relato individual de dificuldade e incluí-lo acima.
+- [ ] Confirmar que o remoto GitHub é o repositório novo exigido pela atividade e revisar a entrega no Blackboard.

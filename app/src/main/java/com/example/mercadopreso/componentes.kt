@@ -27,7 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,13 +49,14 @@ import java.util.Locale
 // ---------- Paleta ----------
 // Fundo e CardCor continuam os mesmos de antes; o amarelo é a cor da marca
 // (a paródia do marketplace) e também a cor da fita de interdição.
-val Fundo = Color(0xFF1B1A12)
-val CardCor = Color(0xFF2A2920)
-val CardBorda = Color(0xFF3F3D2D)
-val Amarelo = Color(0xFFFFD60A)
-val Azul = Color(0xFF5AA2FF)
-val Verde = Color(0xFF3DDC84)
-val Cinza = Color(0xFFA3A396)
+val Fundo = Color(0xFFF2F5F9)
+val CardCor = Color(0xFFFFFFFF)
+val CardBorda = Color(0xFFE1E7EF)
+val Amarelo = Color(0xFFFFE600)
+val Azul = Color(0xFF2F6FB5)
+val Verde = Color(0xFF138A52)
+val Cinza = Color(0xFF657181)
+val TextoPrincipal = Color(0xFF242B35)
 
 // ---------- Tipografia ----------
 // Barlow Condensed lembra placa de sinalização (títulos e preços);
@@ -115,22 +116,22 @@ val TipografiaPreso = Typography(
 @Composable
 fun MercadoPresoTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = darkColorScheme(
+        colorScheme = lightColorScheme(
             primary = Amarelo,
-            onPrimary = Fundo,
+            onPrimary = TextoPrincipal,
             secondary = Azul,
-            onSecondary = Fundo,
+            onSecondary = Color.White,
             tertiary = Verde,
-            onTertiary = Fundo,
+            onTertiary = Color.White,
             background = Fundo,
-            onBackground = Color.White,
-            surface = Fundo,
-            onSurface = Color.White,
+            onBackground = TextoPrincipal,
+            surface = CardCor,
+            onSurface = TextoPrincipal,
             surfaceVariant = CardCor,
             onSurfaceVariant = Cinza,
             surfaceContainer = CardCor,
-            secondaryContainer = Color(0xFF4A4217),
-            onSecondaryContainer = Amarelo,
+            secondaryContainer = Color(0xFFDCEBFF),
+            onSecondaryContainer = Azul,
             outline = CardBorda,
             outlineVariant = CardBorda
         ),
@@ -197,7 +198,16 @@ fun BarraTopo(
 ) {
     Column {
         TopAppBar(
-            title = { Text(titulo, style = MaterialTheme.typography.titleLarge) },
+            title = {
+                if (titulo.equals("Mercado Preso", ignoreCase = true)) {
+                    Column(verticalArrangement = Arrangement.spacedBy((-3).dp)) {
+                        Text("OFERTAS • MODA • TECNOLOGIA", style = MaterialTheme.typography.labelSmall, color = Azul)
+                        Text("MERCADO PRESO", style = MaterialTheme.typography.titleLarge, color = TextoPrincipal)
+                    }
+                } else {
+                    Text(titulo, style = MaterialTheme.typography.titleLarge)
+                }
+            },
             navigationIcon = {
                 if (onVoltar != null) {
                     IconButton(onClick = onVoltar) {
@@ -207,16 +217,41 @@ fun BarraTopo(
             },
             actions = acoes,
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Fundo,
-                titleContentColor = Color.White,
-                navigationIconContentColor = Color.White,
-                actionIconContentColor = Color.White
+                containerColor = Amarelo,
+                titleContentColor = TextoPrincipal,
+                navigationIconContentColor = TextoPrincipal,
+                actionIconContentColor = TextoPrincipal
             )
         )
         FaixaListrada()
     }
 }
 
+@Composable
+fun BannerDestaque(titulo: String, descricao: String, metrica: String) {
+    CartaoPadrao(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+        Row(
+            Modifier.padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Selo("MERCADO • ALA DE OFERTAS", Amarelo)
+                Text(titulo, style = MaterialTheme.typography.titleLarge, color = TextoPrincipal)
+                Text(descricao, style = MaterialTheme.typography.bodySmall, color = Cinza)
+                Text(metrica, style = MaterialTheme.typography.labelMedium, color = Verde)
+            }
+            Box(
+                Modifier
+                    .background(Amarelo.copy(alpha = 0.14f), RoundedCornerShape(18.dp))
+                    .padding(horizontal = 16.dp, vertical = 18.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("MP", style = MaterialTheme.typography.titleLarge, color = Amarelo)
+            }
+        }
+    }
+}
 /** Card padrão do app: fundo escuro com borda fina, clicável quando recebe onClick. */
 @Composable
 fun CartaoPadrao(
@@ -249,7 +284,7 @@ fun CartaoPadrao(
 fun Selo(texto: String, cor: Color, modifier: Modifier = Modifier) {
     Text(
         texto,
-        color = cor,
+        color = if (cor == Amarelo) TextoPrincipal else cor,
         style = MaterialTheme.typography.labelMedium,
         modifier = modifier
             .background(cor.copy(alpha = 0.15f), RoundedCornerShape(50))
@@ -286,14 +321,19 @@ fun EstadoVazio(titulo: String, subtitulo: String, modifier: Modifier = Modifier
 }
 
 @Composable
-fun LinhaValor(rotulo: String, valor: String, corValor: Color = Color.White, negrito: Boolean = false) {
+fun LinhaValor(rotulo: String, valor: String, corValor: Color = TextoPrincipal, negrito: Boolean = false) {
     val estilo = if (negrito) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyMedium
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(rotulo, style = estilo, color = if (negrito) Color.White else Cinza)
+        Text(rotulo, style = estilo, color = if (negrito) TextoPrincipal else Cinza)
         Text(valor, style = estilo, color = corValor)
     }
 }
+
+
+
+
+

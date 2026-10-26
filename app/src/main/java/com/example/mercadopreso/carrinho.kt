@@ -70,9 +70,9 @@ fun TelaCarrinho(nav: NavController, loja: LojaState) {
         })
 
         Text(
-            "mercado preso — sua compra não sai em condicional",
+            "Mercado Preso • entrega sob escolta",
             style = MaterialTheme.typography.bodySmall,
-            color = Amarelo,
+            color = TextoPrincipal,
             modifier = Modifier
                 .padding(start = 16.dp, top = 12.dp, end = 16.dp)
                 .fillMaxWidth()
@@ -203,7 +203,7 @@ fun TelaPedidoConfirmado(nav: NavController, loja: LojaState) {
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Box(Modifier.size(72.dp).background(Verde, CircleShape), contentAlignment = Alignment.Center) {
-                Icon(Icons.Default.Check, contentDescription = null, tint = Fundo, modifier = Modifier.size(38.dp))
+                Icon(Icons.Default.Check, contentDescription = null, tint = TextoPrincipal, modifier = Modifier.size(38.dp))
             }
             Text(
                 "Prisão da compra concluída",
@@ -305,3 +305,5 @@ fun TelaAcompanharPedido(nav: NavController) {
         }
     }
 }
+
+

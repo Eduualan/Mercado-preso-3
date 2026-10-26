@@ -22,10 +22,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import android.util.Log
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +39,7 @@ import androidx.navigation.NavController
 // ============ TELA 4: LISTA DE CATEGORIAS (aba) ============
 @Composable
 fun TelaCategorias(nav: NavController, loja: LojaState) {
+    LaunchedEffect(Unit) { loja.carregarCategorias(); loja.carregarProdutos() }
     val ctx = LocalContext.current
     var nome by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
@@ -116,17 +121,19 @@ private fun Estatistica(rotulo: String, valor: String, modifier: Modifier = Modi
 // quantidade, valor total e preço médio (calculados).
 @Composable
 fun TelaDetalheCategoria(nav: NavController, loja: LojaState, id: Int) {
-    val categoria = loja.categoriaDe(id)
+    var categoria by remember(id) { mutableStateOf<Categoria?>(null) }
+    LaunchedEffect(id) { try { categoria = withContext(Dispatchers.IO) { loja.categoriaPorId(id) } } catch(e: Exception) { Log.e("MercadoPreso", "Falha ao carregar categoria", e) } }
 
     Column(Modifier.fillMaxSize()) {
         BarraTopo("Detalhes da categoria", onVoltar = { nav.popBackStack() })
 
-        if (categoria == null) {
+        val categoriaAtual = categoria
+        if (categoriaAtual == null) {
             EstadoVazio("Categoria não encontrada", "Ela pode ter sido removida.")
             return@Column
         }
 
-        val produtos = loja.produtosDa(categoria.id)
+        val produtos = loja.produtosDa(categoriaAtual.id)
         val valorTotal = produtos.sumOf { it.preco }
         val media = if (produtos.isEmpty()) 0.0 else valorTotal / produtos.size
 
@@ -135,8 +142,8 @@ fun TelaDetalheCategoria(nav: NavController, loja: LojaState, id: Int) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(categoria.nome, style = MaterialTheme.typography.headlineMedium)
-                Text(categoria.descricao, style = MaterialTheme.typography.bodyMedium, color = Cinza)
+                Text(categoriaAtual.nome, style = MaterialTheme.typography.headlineMedium)
+                Text(categoriaAtual.descricao, style = MaterialTheme.typography.bodyMedium, color = Cinza)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Estatistica("Produtos", "${produtos.size}", Modifier.weight(1f))
@@ -170,3 +177,10 @@ fun TelaDetalheCategoria(nav: NavController, loja: LojaState, id: Int) {
         }
     }
 }
+
+
+
+
+
+
+

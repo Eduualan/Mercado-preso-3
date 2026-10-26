@@ -9,17 +9,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -45,12 +50,14 @@ data class Aba(val rota: String, val titulo: String, val icone: ImageVector)
 @Composable
 fun AppMercadoPreso() {
     val navController = rememberNavController()
-    val loja = remember { LojaState() }
+    val context = LocalContext.current
+    val loja = remember { LojaState(context) }
 
     val abas = listOf(
-        Aba(Rotas.PRODUTOS, "Produtos", Icons.Default.Home),
-        Aba(Rotas.CATEGORIAS, "Categorias", Icons.AutoMirrored.Filled.List),
-        Aba(Rotas.CARRINHO, "Carrinho", Icons.Default.ShoppingCart)
+        Aba(Rotas.PRODUTOS, "Ofertas", Icons.Default.Home),
+        Aba(Rotas.CATEGORIAS, "Setores", Icons.AutoMirrored.Filled.List),
+        Aba(Rotas.CARRINHO, "Carrinho", Icons.Default.ShoppingCart),
+        Aba(Rotas.PERFIL, "Perfil", Icons.Default.Person)
     )
 
     val entradaAtual by navController.currentBackStackEntryAsState()
@@ -61,7 +68,7 @@ fun AppMercadoPreso() {
         bottomBar = {
             // A barra de baixo só aparece nas 3 telas principais
             if (rotaAtual in abas.map { it.rota }) {
-                NavigationBar {
+                NavigationBar(containerColor = Color.White, contentColor = Cinza, tonalElevation = 8.dp) {
                     abas.forEach { aba ->
                         NavigationBarItem(
                             selected = rotaAtual == aba.rota,
@@ -75,7 +82,14 @@ fun AppMercadoPreso() {
                                     Icon(aba.icone, contentDescription = aba.titulo)
                                 }
                             },
-                            label = { Text(aba.titulo) }
+                            label = { Text(aba.titulo) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = TextoPrincipal,
+                                selectedTextColor = Amarelo,
+                                indicatorColor = Amarelo,
+                                unselectedIconColor = Cinza,
+                                unselectedTextColor = Cinza
+                            )
                         )
                     }
                 }
@@ -109,9 +123,18 @@ fun AppMercadoPreso() {
 
             composable(Rotas.CARRINHO) { TelaCarrinho(navController, loja) }
 
+            composable(Rotas.PERFIL) { TelaPerfil(navController, loja) }
+
             composable(Rotas.CONFIRMADO) { TelaPedidoConfirmado(navController, loja) }
 
             composable(Rotas.ACOMPANHAR) { TelaAcompanharPedido(navController) }
         }
     }
 }
+
+
+
+
+
+
+
