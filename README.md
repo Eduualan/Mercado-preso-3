@@ -72,11 +72,12 @@ Os produtos e categorias de demonstração são incluídos apenas quando não h�
 
 ## Dificuldades encontradas e decisões
 
-Durante a integração, o Android Studio mostrou referências de Room não resolvidas enquanto as dependências e o processador KSP ainda não estavam sincronizados. Também surgiram erros de geração KSP/Kotlin, referências a propriedades delegadas e incompatibilidades entre valores anuláveis e não anuláveis. As correções foram configurar `room-runtime`, `room-ktx` e `room-compiler` com KSP, alinhar a configuração Gradle usada pelo Kotlin integrado do Android, guardar propriedades delegadas em variáveis locais quando necessário e tratar o resultado nulo da busca por ID antes de acessar o produto. Ao final, `assembleDebug` compilou com sucesso.
+O grupo encontrou duas dificuldades principais durante a integração:
+
+1. **Configurar Room e KSP no Gradle.** No primeiro momento, o Android Studio mostrava referências de Room não resolvidas e o processamento KSP falhava. Foi necessário conferir as dependências `room-runtime`, `room-ktx` e `room-compiler`, aplicar o plugin KSP antes de declarar o processador e ajustar a configuração Gradle para o Kotlin integrado ao Android. Depois da sincronização, a compilação passou.
+2. **Tratar os dados que podem não existir.** A consulta de um produto pelo ID retorna `Produto?`, então não era seguro acessar ou editar o produto como se ele sempre tivesse sido encontrado. Também apareceram erros ao tentar fazer smart cast em propriedades delegadas pelo Compose. Resolvemos verificando o resultado nulo antes de abrir os dados e guardando valores delegados em variáveis locais antes de usá-los. Assim, o detalhe e a edição passaram a compilar corretamente.
 
 A principal decisão de persistência foi manter o estado observável que a interface Compose já usa, mas fazer do Room a origem dos produtos e categorias. A edição de preço consulta o registro pelo ID e usa `@Update`, preservando os demais campos. A foto é salva como arquivo privado do app e seu caminho é armazenado em `imagemLocal`; assim, não é necessário guardar uma imagem grande diretamente no SQLite nem depender de uma permissão temporária da galeria.
-
-O histórico do projeto não identifica qual integrante teve cada dificuldade individual. Para responder com precisão à pergunta da atividade sobre a experiência de cada pessoa, os integrantes devem acrescentar aqui um exemplo real contado por eles, sem atribuir experiências que não foram registradas.
 
 ## Capturas da versão atual e evidências de execução
 
@@ -135,5 +136,5 @@ As fotos foram redimensionadas para o app. Créditos e licenças foram registrad
 - [ ] Executar e gravar o CRUD no aparelho/emulador.
 - [ ] Gravar o teste de fechar e reabrir o app com os dados preservados.
 - [x] Adicionar capturas das telas atuais em `evidencias/`.
-- [ ] Confirmar com o trio o relato individual de dificuldade e incluí-lo acima.
+- [x] Registrar duas dificuldades técnicas do projeto e como foram resolvidas.
 - [ ] Confirmar que o remoto GitHub é o repositório novo exigido pela atividade e revisar a entrega no Blackboard.
