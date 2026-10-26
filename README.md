@@ -20,11 +20,24 @@ O APK é gerado em `app/build/outputs/apk/debug/app-debug.apk`. A compilação d
 
 ## O que mudou desde o Trabalho 2
 
-No Trabalho 2, os produtos e as categorias eram mantidos em listas observadas pelo Compose (`mutableStateListOf`), então esses dados não eram uma fonte persistente. No Trabalho 3, essas mesmas listas de apresentação são preenchidas a partir do Room e as operações de cadastro, edição e remoção escrevem no banco local. Ao fechar e reabrir o app, os registros devem ser carregados novamente do SQLite.
+No Trabalho 2, o aplicativo já tinha navegação e telas de produtos, categorias, detalhes e carrinho, mas os dados ficavam em listas em memória (`mutableStateListOf`) e se perdiam ao encerrar o app. A aparência também era mais simples: fundo escuro, cartões compactos e poucos produtos de demonstração.
 
-A navegação usa `NavHost`. As telas de detalhe recebem o ID do item pela rota e consultam o banco. O catálogo também ganhou categorias variadas, imagens de demonstração e seleção de foto da galeria ao cadastrar um produto. A foto selecionada é copiada para o armazenamento interno do app e o caminho fica salvo no registro.
+No Trabalho 3, além de migrar produtos e categorias para o Room, **reformulamos a aparência de todo o aplicativo**. Atualizamos cores, cartões, cabeçalhos, navegação e formulários; criamos uma identidade visual amarela para o Mercado Preso; ampliamos o catálogo com tecnologia, moda, casa, papelaria e esporte; adicionamos fotos aos produtos, carrossel de destaques e uma tela de perfil. O cadastro também permite escolher uma foto da galeria e mantê-la salva no dispositivo.
 
-O carrinho e o estado do pedido continuam em memória; não fazem parte das entidades persistidas deste trabalho.
+As capturas abaixo mostram como algumas telas eram no Trabalho 2. As capturas da versão atual estão mais adiante neste README, na seção de evidências.
+
+<table>
+  <tr>
+    <td align="center"><strong>Lista de produtos — antes</strong><br><img src="prints/telaprodutos.png" width="220" alt="Lista antiga de produtos do Trabalho 2"></td>
+    <td align="center"><strong>Categorias — antes</strong><br><img src="prints/categorias.png" width="220" alt="Tela antiga de categorias do Trabalho 2"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Detalhe do produto — antes</strong><br><img src="prints/detalhesp.png" width="220" alt="Tela antiga de detalhe de produto do Trabalho 2"></td>
+    <td align="center"><strong>Carrinho — antes</strong><br><img src="prints/tela_1.png" width="220" alt="Tela antiga do carrinho do Trabalho 2"></td>
+  </tr>
+</table>
+
+No Trabalho 3, as listas são recarregadas do banco quando suas telas abrem. Cadastro, edição de preço e remoção escrevem no Room. As telas de detalhe recebem o ID pela navegação e consultam o registro correspondente no banco. O carrinho e o estado do pedido continuam em memória e não fazem parte das entidades persistidas deste trabalho.
 
 ## Entidades, campos e DAOs
 
