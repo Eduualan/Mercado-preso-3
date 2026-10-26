@@ -116,8 +116,11 @@ As capturas abaixo mostram a versão atual do app e foram adicionadas ao reposit
 </table>
 
 
-- Vídeo CRUD: **pendente de gravação**.
-- Vídeo fechando e reabrindo o app: **pendente de gravação**.
+### Vídeo de CRUD e demonstração
+
+[![Assistir ao vídeo de CRUD e demonstração do Mercado Preso](https://img.youtube.com/vi/7kYqOw9_61s/hqdefault.jpg)](https://youtu.be/7kYqOw9_61s)
+
+[Assistir ao vídeo no YouTube](https://youtu.be/7kYqOw9_61s) — demonstração do aplicativo e das operações de CRUD.
 
 A apresentação em sala também deve demonstrar ao vivo adicionar, editar, remover e fechar/reabrir o app.
 
