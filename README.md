@@ -1,4 +1,4 @@
-# Mercado Preso — Trabalho 3
+# Mercado Preso — Trabalho 4
 
 Aplicativo Android de marketplace em Kotlin e Jetpack Compose. O tema é uma paródia de comércio online; o catálogo inclui tecnologia, moda, casa, papelaria e esporte. Produtos e categorias são armazenados localmente com Room/SQLite.
 
@@ -16,7 +16,7 @@ Para gerar o APK de depuração no Windows, execute no terminal do Android Studi
 .\gradlew.bat assembleDebug
 ```
 
-O APK é gerado em `app/build/outputs/apk/debug/app-debug.apk`. A compilação de depuração foi concluída com sucesso em 26/10/2026. Essa confirmação é da compilação; o teste de persistência em aparelho/emulador precisa ser demonstrado separadamente, na seção de evidências.
+O APK é gerado em `app/build/outputs/apk/debug/app-debug.apk`. A compilação da versão anterior foi concluída em 26/10/2026. A compilação da Parte 4 ainda precisa ser confirmada no Android Studio, e o teste de persistência em aparelho/emulador deve ser demonstrado separadamente.
 
 ## O que mudou desde o Trabalho 2
 
@@ -37,7 +37,54 @@ As capturas abaixo foram recuperadas do repositório anterior `Eduualan/Mercadop
   </tr>
 </table>
 
-No Trabalho 3, as listas são recarregadas do banco quando suas telas abrem. Cadastro, edição de preço e remoção escrevem no Room. As telas de detalhe recebem o ID pela navegação e consultam o registro correspondente no banco. O carrinho e o estado do pedido continuam em memória e não fazem parte das entidades persistidas deste trabalho.
+No Trabalho 3, os dados persistidos eram coordenados pela classe de estado da loja. Na Parte 4, a interface passou a observar os ViewModels e os repositórios passaram a encapsular o acesso ao Room. O carrinho e o estado do pedido continuam em memória e não fazem parte das entidades persistidas.
+
+
+## Parte 4 — organização em camadas e estado da interface
+
+A Parte 4 reorganiza o mesmo aplicativo do Trabalho 3. Mantivemos as telas e as operações de catálogo, categorias, carrinho e perfil; o objetivo desta etapa foi separar responsabilidades e fazer a interface observar estados publicados pelos ViewModels.
+
+### Como dividimos os pacotes
+
+A divisão foi feita pelo tipo de responsabilidade de cada arquivo:
+
+- `ui/` contém telas e componentes Compose. As telas desenham os dados recebidos e chamam ações dos ViewModels; não executam consultas ao Room.
+  - `ProdutosScreen.kt`: catálogo e busca.
+  - `ProdutoDestaques.kt`: carrossel e cálculo de desconto.
+  - `ProdutoDetalheScreen.kt`: detalhe, edição de preço e ações de compra.
+  - `CadastroProdutoScreen.kt`: formulário e escolha de foto.
+  - `ProdutoImage.kt`: carregamento e exibição das fotos.
+- `data/local/` contém o banco Room, DAOs e entidades. As entidades de negócio `Produto` e `Categoria` representam as tabelas do catálogo. `EstadoCatalogo` guarda apenas a marca técnica da carga inicial.
+- `data/repository/` contém `ProdutoRepository`, `CategoriaRepository` e `EstadoCatalogoRepository`, que encapsulam o acesso aos DAOs. `CatalogoInicialRepository` coordena a carga de demonstração uma única vez.
+- `viewmodel/` contém os ViewModels, seus `UiState` e as factories que recebem os repositórios na criação.
+- `data/MercadoPresoContainer.kt` monta o banco e fornece as dependências para a aplicação.
+
+Essa divisão deixa a tela dependente do estado e das ações do ViewModel; o ViewModel depende dos repositórios; e os repositórios encapsulam o acesso aos DAOs. Assim, uma futura troca do Room por uma API pode ser concentrada nos repositórios, sem colocar consultas ou detalhes do banco nas telas.
+
+### O que o Repository resolve
+
+Antes, a camada de interface e o estado da loja coordenavam consultas e alterações diretamente ligadas ao banco. Agora `ProdutoRepository` e `CategoriaRepository` oferecem operações como listar, inserir, atualizar e remover. Os ViewModels usam esses métodos sem precisar conhecer as anotações, consultas SQL ou DAOs do Room. O `EstadoCatalogoRepository` aplica a mesma regra à marca de carga inicial.
+
+Além de separar responsabilidades, o Repository é o ponto de adaptação da origem dos dados: se os produtos passarem a vir de uma API, a implementação do repositório pode mudar mantendo os contratos usados pelo ViewModel.
+
+### UiState: dados de cada área e motivo dos campos
+
+Os estados reúnem os dados que cada tela precisa para se desenhar. A tela coleta o estado com `collectAsState()` e chama métodos do ViewModel quando há interação.
+
+- **Produtos (`ProdutoUiState`)**: lista de produtos e categorias, produto selecionado, texto de busca, campos do formulário, categoria selecionada, caminho da foto, preço em edição, indicadores de carregamento e mensagem. Esses campos atendem à listagem, cadastro, detalhe e feedback sem espalhar o estado por várias variáveis `remember`.
+- **Categorias (`CategoriaUiState`)**: lista de categorias e produtos, categoria selecionada, produtos daquela categoria, nome e descrição do formulário, carregamento e mensagem. A tela de detalhe usa os mesmos dados observados para mostrar a categoria e os produtos relacionados.
+- **Carrinho (`CarrinhoUiState`)**: itens com quantidade e seleção, cupom, dados do último pedido e etapa de acompanhamento. Subtotal, desconto, total e quantidade são derivados desses dados para evitar manter cópias que poderiam ficar divergentes.
+- **Perfil (`PerfilUiState`)**: nome, apelido, modo de edição, avisos, contagem do carrinho e das ofertas, e mensagem de feedback. Isso concentra o que a tela de perfil exibe e edita.
+
+`ProdutoViewModel` e `CategoriaViewModel` observam os `Flow` dos repositórios dentro de `viewModelScope` e publicam alterações em `_uiState`, privado, expondo `uiState` somente para leitura como `StateFlow`. Carrinho e perfil também usam estados próprios para suas interações locais.
+
+### Fluxo do catálogo e decisões de dados
+
+`ProdutoDao.buscarTodos()` e `CategoriaDao.buscarTodos()` retornam `Flow<List<T>>`. O Room emite os dados novamente quando uma linha muda; assim, a lista observada pela interface se atualiza após inserir, alterar ou remover, sem um `LaunchedEffect` para buscar tudo manualmente.
+
+Para abrir um detalhe, a navegação passa o ID do item. O ViewModel observa esse registro pelo Repository e publica o resultado no estado. A foto escolhida no cadastro é copiada para o armazenamento privado do app pelo repositório de produtos; o caminho fica em `imagemLocal`.
+
+A classe `EstadoCatalogo` e sua tabela existem para impedir que produtos ou categorias apagados reapareçam ao abrir ou girar o app. Bancos antigos são marcados pela migração `2 → 3`; uma instalação nova registra a marca depois de inserir o catálogo inicial. Essa tabela é técnica e não representa uma nova função visível ao usuário.
 
 ## Entidades, campos e DAOs
 
@@ -60,7 +107,7 @@ Esses campos cobrem as informações usadas nos formulários, nas listas, no det
 
 ### Consultas e operações
 
-`ProdutoDao` e `CategoriaDao` têm métodos `suspend` para inserir, listar, atualizar e excluir. As listas são ordenadas pelo nome. Ambos também têm busca por ID, usada pelas respectivas telas de detalhe:
+`ProdutoDao` e `CategoriaDao` usam métodos `suspend` para inserir, atualizar, excluir e buscar um item pelo ID. `buscarTodos()` não é `suspend`: retorna `Flow<List<T>>`. As listas são ordenadas pelo nome:
 
 - Produtos: `SELECT * FROM produtos ORDER BY nome` e busca por `id`.
 - Categorias: `SELECT * FROM categorias ORDER BY nome` e busca por `id`.
@@ -69,9 +116,9 @@ A busca por ID foi escolhida porque a navegação passa o identificador do item,
 
 ### Banco e migração
 
-`AppDatabase` reúne as duas entidades e expõe os DAOs por um Singleton (`companion object`, `@Volatile` e `synchronized`). A versão atual é **2**. A migração `1 → 2` acrescenta a coluna anulável `imagemLocal` com valor padrão nulo, preservando os produtos que já estavam no banco.
+`AppDatabase` reúne as entidades de produto e categoria, além do controle técnico da carga inicial, e expõe os DAOs por um Singleton (`companion object`, `@Volatile` e `synchronized`). A versão atual é **3**. A migração `1 → 2` acrescenta a coluna anulável `imagemLocal`; a migração `2 → 3` cria a tabela `estado_catalogo` e marca os bancos existentes como já inicializados, para que exclusões do usuário não sejam desfeitas. Em uma instalação nova, essa marca é gravada junto com a carga inicial.
 
-As operações do DAO são executadas em `Dispatchers.IO`. A classe `LojaState` atualiza as listas observadas pelo Compose após as alterações no banco. As chamadas de leitura são iniciadas quando as telas de lista abrem; as telas de detalhe buscam o registro pelo ID recebido.
+As telas acompanham os dados por `StateFlow` nos ViewModels. A camada de repositório encapsula as chamadas aos DAOs; as consultas do Room emitem `Flow`, e a interface atualiza conforme o banco muda.
 
 ## Fluxos disponíveis
 
@@ -81,16 +128,18 @@ As operações do DAO são executadas em `Dispatchers.IO`. A classe `LojaState` 
 - **Categorias:** lista, cadastro, remoção quando não há produtos associados e detalhes com produtos daquela categoria.
 - **Carrinho e pedido:** quantidade, subtotal, cupom, finalização e acompanhamento simulado. Esses dados são temporários em memória.
 
-Os produtos e categorias de demonstração são incluídos apenas quando não há um registro com o mesmo nome. O app não substitui os dados existentes durante a inicialização.
+Produtos e categorias de demonstração são inseridos uma única vez em uma instalação nova. A tabela `estado_catalogo` registra que a carga inicial foi feita; assim, produtos ou categorias apagados pelo usuário não voltam quando o app é reaberto. Bancos existentes recebem essa marca na migração `2 → 3`.
 
-## Dificuldades encontradas e decisões
+## Dificuldades encontradas e como resolvemos
 
-O grupo encontrou duas dificuldades principais durante a integração:
+Durante o desenvolvimento apareceram dificuldades tanto na integração com Room quanto na reorganização da Parte 4:
 
-1. **Configurar Room e KSP no Gradle.** No primeiro momento, o Android Studio mostrava referências de Room não resolvidas e o processamento KSP falhava. Foi necessário conferir as dependências `room-runtime`, `room-ktx` e `room-compiler`, aplicar o plugin KSP antes de declarar o processador e ajustar a configuração Gradle para o Kotlin integrado ao Android. Depois da sincronização, a compilação passou.
-2. **Tratar os dados que podem não existir.** A consulta de um produto pelo ID retorna `Produto?`, então não era seguro acessar ou editar o produto como se ele sempre tivesse sido encontrado. Também apareceram erros ao tentar fazer smart cast em propriedades delegadas pelo Compose. Resolvemos verificando o resultado nulo antes de abrir os dados e guardando valores delegados em variáveis locais antes de usá-los. Assim, o detalhe e a edição passaram a compilar corretamente.
+1. **Room e KSP no Gradle:** no início, o Android Studio mostrava imports Room não resolvidos e erros no processamento KSP. Conferimos as dependências do Room e do processador, o plugin aplicado e a configuração do Kotlin no Gradle; depois da correção, a sincronização e a compilação daquela versão avançaram.
+2. **Separar a tela de produtos:** ao mover o formulário para `CadastroProdutoScreen.kt`, o editor apontou `rememberScrollState` como referência não resolvida. A lista de problemas indicou o arquivo e a linha; faltava importar a função. O import foi adicionado.
+3. **Itens fixos voltando após exclusão ou rotação:** a carga inicial inseria novamente qualquer produto ou categoria que não encontrava. Criamos um registro persistente da carga inicial e uma migração para bancos existentes. A rotina agora só semeia uma instalação nova e grava a marca na mesma transação.
+4. **Dados que podem não existir:** uma busca por ID pode retornar `null`, e o Kotlin não permite usar esse resultado como se sempre houvesse um item. As telas verificam a ausência antes de desenhar o detalhe e a edição de preço.
 
-A principal decisão de persistência foi manter o estado observável que a interface Compose já usa, mas fazer do Room a origem dos produtos e categorias. A edição de preço consulta o registro pelo ID e usa `@Update`, preservando os demais campos. A foto é salva como arquivo privado do app e seu caminho é armazenado em `imagemLocal`; assim, não é necessário guardar uma imagem grande diretamente no SQLite nem depender de uma permissão temporária da galeria.
+Esses pontos foram resolvidos no código e registrados como dificuldades técnicas do projeto. O grupo tem dois integrantes: Eduardo Alan e Francisco Caninde. Os relatos individuais de dificuldade serão escritos pelos próprios integrantes antes da entrega, para que cada um explique com suas palavras o que enfrentou e como resolveu.
 
 ## Capturas da versão atual e evidências de execução
 
@@ -120,7 +169,7 @@ As capturas abaixo mostram a versão atual do app e foram adicionadas ao reposit
 
 [![Assistir ao vídeo de CRUD e demonstração do Mercado Preso](https://img.youtube.com/vi/7kYqOw9_61s/hqdefault.jpg)](https://youtu.be/7kYqOw9_61s)
 
-[Assistir ao vídeo no YouTube](https://youtu.be/7kYqOw9_61s) — demonstração do aplicativo e das operações de CRUD.
+[Assistir ao vídeo no YouTube](https://youtu.be/7kYqOw9_61s) — demonstração do aplicativo e das operações de CRUD. O vídeo já publicado documenta a versão anterior à reorganização. Para comprovar a Parte 4, gravem uma nova demonstração após compilar e testar esta versão, mostrando cadastro, edição, remoção, rotação da tela e reabertura sem os itens apagados.
 
 A apresentação em sala também deve demonstrar ao vivo adicionar, editar, remover e fechar/reabrir o app.
 
@@ -145,12 +194,17 @@ As fotos foram redimensionadas para o app. Créditos e licenças foram registrad
 
 - [x] Dependências Room e KSP configuradas.
 - [x] Duas entidades com chave primária autogerada.
-- [x] Dois DAOs com operações básicas `suspend` e consultas filtradas por ID.
-- [x] `AppDatabase` Singleton com migração para a coluna da foto.
+- [x] Dois DAOs com operações `suspend`, consultas por ID e listas observáveis em `Flow<List<T>>`.
+- [x] `AppDatabase` Singleton com migrações da coluna da foto e do controle da carga inicial do catálogo.
+- [x] Catálogo demonstrativo semeado uma única vez, sem repor itens apagados.
 - [x] Listas e detalhes consultam o banco; cadastro, edição de preço e remoção persistem.
-- [x] Projeto compila com `assembleDebug`.
+- [ ] Projeto compila com `assembleDebug` nesta versão da Parte 4.
 - [ ] Executar e gravar o CRUD no aparelho/emulador.
 - [ ] Gravar o teste de fechar e reabrir o app com os dados preservados.
+- [ ] Confirmar no aparelho/emulador que exclusões continuam aplicadas após girar a tela e reabrir o app.
 - [x] Adicionar capturas das telas atuais em `evidencias/`.
+- [x] Organizar os pacotes e criar repositórios, ViewModels com UiState e factories para a Parte 4.
+- [x] Documentar a organização e as decisões da Parte 4 no README.
 - [x] Registrar duas dificuldades técnicas do projeto e como foram resolvidas.
-- [ ] Confirmar que o remoto GitHub é o repositório novo exigido pela atividade e revisar a entrega no Blackboard.
+- [ ] Confirmar que a branch e o remoto GitHub usados são o mesmo repositório do Trabalho 3 e revisar a entrega no Blackboard.
+- [ ] Acrescentar os relatos reais de dificuldade de Eduardo Alan e Francisco Caninde antes da entrega.

@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.mercadopreso
+package com.example.mercadopreso.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -36,10 +36,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,6 +45,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.mercadopreso.Rotas
+import com.example.mercadopreso.viewmodel.CarrinhoViewModel
 
 private fun NavController.voltarAoInicio() {
     navigate(Rotas.PRODUTOS) {
@@ -57,13 +57,14 @@ private fun NavController.voltarAoInicio() {
 
 // ============ TELA 6: CARRINHO (aba) ============
 @Composable
-fun TelaCarrinho(nav: NavController, loja: LojaState) {
+fun TelaCarrinho(nav: NavController, viewModel: CarrinhoViewModel) {
+    val state by viewModel.uiState.collectAsState()
     val ctx = LocalContext.current
 
     Column(Modifier.fillMaxSize()) {
         BarraTopo("Meu carrinho", acoes = {
             IconButton(onClick = {
-                val n = loja.removerMarcados()
+                val n = viewModel.removerMarcados()
                 val msg = if (n == 0) "Marque itens para remover" else "$n item(ns) removido(s)"
                 Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
             }) { Icon(Icons.Default.Delete, contentDescription = "Remover marcados") }
@@ -80,7 +81,7 @@ fun TelaCarrinho(nav: NavController, loja: LojaState) {
                 .padding(12.dp)
         )
 
-        if (loja.carrinho.isEmpty()) {
+        if (state.itens.isEmpty()) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     EstadoVazio("Seu carrinho está vazio", "Como a sua cela. Que tal ver os produtos?")
@@ -93,7 +94,7 @@ fun TelaCarrinho(nav: NavController, loja: LojaState) {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(loja.carrinho, key = { it.produto.id }) { item ->
+                items(state.itens, key = { it.produto.id }) { item ->
                     CartaoPadrao {
                         Row(
                             Modifier.padding(start = 4.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
@@ -101,7 +102,7 @@ fun TelaCarrinho(nav: NavController, loja: LojaState) {
                         ) {
                             Checkbox(
                                 checked = item.marcado,
-                                onCheckedChange = { loja.alternarMarcado(item.produto.id) }
+                                onCheckedChange = { viewModel.alternarMarcado(item.produto.id) }
                             )
                             Column(
                                 Modifier.weight(1f).padding(top = 12.dp)
@@ -114,11 +115,11 @@ fun TelaCarrinho(nav: NavController, loja: LojaState) {
                                     color = Cinza
                                 )
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    IconButton(onClick = { loja.alterarQuantidade(item.produto.id, -1) }) {
+                                    IconButton(onClick = { viewModel.alterarQuantidade(item.produto.id, -1) }) {
                                         Text("−", style = MaterialTheme.typography.titleLarge, color = Amarelo)
                                     }
                                     Text("${item.quantidade}", style = MaterialTheme.typography.titleMedium)
-                                    IconButton(onClick = { loja.alterarQuantidade(item.produto.id, +1) }) {
+                                    IconButton(onClick = { viewModel.alterarQuantidade(item.produto.id, +1) }) {
                                         Text("+", style = MaterialTheme.typography.titleLarge, color = Amarelo)
                                     }
                                 }
@@ -138,32 +139,32 @@ fun TelaCarrinho(nav: NavController, loja: LojaState) {
         CartaoPadrao(Modifier.padding(16.dp)) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(
-                    Modifier.fillMaxWidth().clickable { loja.cupomAplicado = !loja.cupomAplicado },
+                    Modifier.fillMaxWidth().clickable { viewModel.alternarCupom() },
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        if (loja.cupomAplicado) "Cupom PRIMEIRAFUGA aplicado (toque para remover)"
+                        if (state.cupomAplicado) "Cupom PRIMEIRAFUGA aplicado (toque para remover)"
                         else "Aplicar cupom PRIMEIRAFUGA",
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (loja.cupomAplicado) Verde else Amarelo,
+                        color = if (state.cupomAplicado) Verde else Amarelo,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        if (loja.desconto > 0) "-${loja.desconto.reais()}" else "",
+                        if (state.desconto > 0) "-${state.desconto.reais()}" else "",
                         style = MaterialTheme.typography.bodySmall,
                         color = Verde
                     )
                 }
                 HorizontalDivider()
-                LinhaValor("Subtotal (${loja.quantidadeTotal} itens)", loja.subtotal.reais())
+                LinhaValor("Subtotal (${state.quantidadeTotal} itens)", state.subtotal.reais())
                 LinhaValor("Frete até a cela", "Grátis", Verde)
-                LinhaValor("Total", loja.total.reais(), negrito = true)
+                LinhaValor("Total", state.total.reais(), negrito = true)
                 Button(
                     onClick = {
-                        if (loja.carrinho.isEmpty()) {
+                        if (state.itens.isEmpty()) {
                             Toast.makeText(ctx, "Carrinho vazio", Toast.LENGTH_SHORT).show()
                         } else {
-                            loja.finalizarCompra()
+                            viewModel.finalizarCompra()
                             nav.navigate(Rotas.CONFIRMADO)
                         }
                     },
@@ -194,7 +195,8 @@ private fun EtapaPedido(cor: Color, titulo: String, detalhe: String) {
 
 // ============ TELA 7: PEDIDO CONFIRMADO ============
 @Composable
-fun TelaPedidoConfirmado(nav: NavController, loja: LojaState) {
+fun TelaPedidoConfirmado(nav: NavController, viewModel: CarrinhoViewModel) {
+    val state by viewModel.uiState.collectAsState()
     Column(Modifier.fillMaxSize()) {
         BarraTopo("Pedido confirmado")
         Column(
@@ -211,7 +213,7 @@ fun TelaPedidoConfirmado(nav: NavController, loja: LojaState) {
                 textAlign = TextAlign.Center
             )
             Text(
-                "Pedido ${loja.ultimoPedido}. Sem direito a fiança de arrependimento.",
+                "Pedido ${state.ultimoPedido}. Sem direito a fiança de arrependimento.",
                 style = MaterialTheme.typography.bodySmall,
                 color = Cinza,
                 textAlign = TextAlign.Center
@@ -233,7 +235,7 @@ fun TelaPedidoConfirmado(nav: NavController, loja: LojaState) {
                 ) {
                     Column {
                         Text("Total pago", style = MaterialTheme.typography.bodySmall, color = Cinza)
-                        Text(loja.ultimoTotal.reais(), style = MaterialTheme.typography.titleLarge)
+                        Text(state.ultimoTotal.reais(), style = MaterialTheme.typography.titleLarge)
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text("Forma de pagamento", style = MaterialTheme.typography.bodySmall, color = Cinza)
@@ -257,14 +259,14 @@ fun TelaPedidoConfirmado(nav: NavController, loja: LojaState) {
 
 // ============ TELA 8: ACOMPANHAR PEDIDO ============
 @Composable
-fun TelaAcompanharPedido(nav: NavController) {
+fun TelaAcompanharPedido(nav: NavController, viewModel: CarrinhoViewModel) {
+    val state by viewModel.uiState.collectAsState()
     val etapas = listOf(
         "Pedido algemado no depósito",
         "Em transferência sob escolta",
         "Saiu para entrega na ala B",
         "Entregue na sua cela"
     )
-    var etapaAtual by remember { mutableIntStateOf(1) }
 
     Column(Modifier.fillMaxSize()) {
         BarraTopo("Acompanhar pedido", onVoltar = { nav.popBackStack() })
@@ -273,20 +275,20 @@ fun TelaAcompanharPedido(nav: NavController) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     etapas.forEachIndexed { i, titulo ->
                         val cor = when {
-                            i < etapaAtual -> Verde
-                            i == etapaAtual -> Azul
+                            i < state.etapaAtual -> Verde
+                            i == state.etapaAtual -> Azul
                             else -> Cinza
                         }
                         EtapaPedido(cor, titulo, when {
-                            i < etapaAtual -> "Concluída"
-                            i == etapaAtual -> "Em andamento"
+                            i < state.etapaAtual -> "Concluída"
+                            i == state.etapaAtual -> "Em andamento"
                             else -> "Aguardando"
                         })
                     }
                 }
             }
             Spacer(Modifier.height(4.dp))
-            if (etapaAtual >= etapas.lastIndex) {
+            if (state.etapaAtual >= etapas.lastIndex) {
                 Text(
                     "Entregue! Lembrando: sem direito a devolução.",
                     style = MaterialTheme.typography.bodyMedium,
@@ -294,8 +296,8 @@ fun TelaAcompanharPedido(nav: NavController) {
                 )
             }
             Button(
-                onClick = { if (etapaAtual < etapas.lastIndex) etapaAtual++ },
-                enabled = etapaAtual < etapas.lastIndex,
+                onClick = { if (state.etapaAtual < etapas.lastIndex) viewModel.proximaEtapa() },
+                enabled = state.etapaAtual < etapas.lastIndex,
                 modifier = Modifier.fillMaxWidth().height(54.dp)
             ) { Text("Simular próxima etapa") }
             OutlinedButton(
@@ -305,5 +307,6 @@ fun TelaAcompanharPedido(nav: NavController) {
         }
     }
 }
+
 
 

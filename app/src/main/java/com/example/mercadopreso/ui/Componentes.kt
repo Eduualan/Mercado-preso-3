@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.mercadopreso
+package com.example.mercadopreso.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -332,6 +332,7 @@ fun LinhaValor(rotulo: String, valor: String, corValor: Color = TextoPrincipal, 
         Text(valor, style = estilo, color = corValor)
     }
 }
+
 
 
 
