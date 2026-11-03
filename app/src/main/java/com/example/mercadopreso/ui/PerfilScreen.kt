@@ -1,4 +1,4 @@
-package com.example.mercadopreso
+package com.example.mercadopreso.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -26,10 +26,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,14 +36,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.mercadopreso.Rotas
+import com.example.mercadopreso.viewmodel.PerfilViewModel
 
 @Composable
-fun TelaPerfil(nav: NavController, loja: LojaState) {
+fun TelaPerfil(nav: NavController, viewModel: PerfilViewModel) {
     val contexto = LocalContext.current
-    var nome by rememberSaveable { mutableStateOf("Visitante") }
-    var apelido by rememberSaveable { mutableStateOf("Recruta") }
-    var editando by rememberSaveable { mutableStateOf(false) }
-    var avisosAtivos by rememberSaveable { mutableStateOf(true) }
+    val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(state.mensagem) { state.mensagem?.let { Toast.makeText(contexto, it, Toast.LENGTH_SHORT).show(); viewModel.limparMensagem() } }
+    val nome = state.nome
+    val apelido = state.apelido
+    val editando = state.editando
+    val avisosAtivos = state.avisosAtivos
 
     Column(Modifier.fillMaxSize()) {
         BarraTopo("Meu perfil")
@@ -90,13 +93,13 @@ fun TelaPerfil(nav: NavController, loja: LojaState) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 CartaoPadrao(Modifier.weight(1f)) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("${loja.carrinho.size}", style = MaterialTheme.typography.headlineMedium, color = Azul)
+                        Text("${state.quantidadeCarrinho}", style = MaterialTheme.typography.headlineMedium, color = Azul)
                         Text("itens no carrinho", style = MaterialTheme.typography.bodySmall, color = Cinza)
                     }
                 }
                 CartaoPadrao(Modifier.weight(1f)) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("${loja.produtos.size}", style = MaterialTheme.typography.headlineMedium, color = Azul)
+                        Text("${state.ofertasDisponiveis}", style = MaterialTheme.typography.headlineMedium, color = Azul)
                         Text("ofertas disponíveis", style = MaterialTheme.typography.bodySmall, color = Cinza)
                     }
                 }
@@ -114,7 +117,7 @@ fun TelaPerfil(nav: NavController, loja: LojaState) {
                     ) {
                         Text("Dados do perfil", style = MaterialTheme.typography.titleLarge)
                         if (!editando) {
-                            OutlinedButton(onClick = { editando = true }) {
+                            OutlinedButton(onClick = viewModel::iniciarEdicao) {
                                 Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Text("Editar", modifier = Modifier.padding(start = 6.dp))
                             }
@@ -124,32 +127,20 @@ fun TelaPerfil(nav: NavController, loja: LojaState) {
                     if (editando) {
                         OutlinedTextField(
                             value = nome,
-                            onValueChange = { nome = it },
+                            onValueChange = viewModel::atualizarNome,
                             label = { Text("Nome") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
                             value = apelido,
-                            onValueChange = { apelido = it.filter { char -> char.isLetterOrDigit() || char == '_' } },
+                            onValueChange = viewModel::atualizarApelido,
                             label = { Text("Apelido") },
                             prefix = { Text("@") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
-                        Button(
-                            onClick = {
-                                if (nome.isBlank() || apelido.isBlank()) {
-                                    Toast.makeText(contexto, "Preencha nome e apelido", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    nome = nome.trim()
-                                    apelido = apelido.trim()
-                                    editando = false
-                                    Toast.makeText(contexto, "Perfil atualizado", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) { Text("Salvar perfil") }
+                        Button(onClick = { viewModel.salvarPerfil() }, modifier = Modifier.fillMaxWidth()) { Text("Salvar perfil") }
                     } else {
                         LinhaPerfil("Nome", nome)
                         LinhaPerfil("Apelido", "@$apelido")
@@ -169,7 +160,7 @@ fun TelaPerfil(nav: NavController, loja: LojaState) {
                         Text("Avisos de ofertas", style = MaterialTheme.typography.titleMedium)
                         Text("Novidades e entregas sob escolta", style = MaterialTheme.typography.bodySmall, color = Cinza)
                     }
-                    Switch(checked = avisosAtivos, onCheckedChange = { avisosAtivos = it })
+                    Switch(checked = avisosAtivos, onCheckedChange = viewModel::alterarAvisos)
                 }
             }
 
@@ -195,5 +186,6 @@ private fun LinhaPerfil(rotulo: String, valor: String) {
         Text(valor, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
     }
 }
+
 
 
