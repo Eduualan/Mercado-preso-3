@@ -171,7 +171,7 @@ As capturas abaixo mostram a versão atual do app e foram adicionadas ao reposit
 
 [Assistir ao vídeo no YouTube](https://youtu.be/7kYqOw9_61s) — demonstração do aplicativo e das operações de CRUD. O vídeo já publicado documenta a versão anterior à reorganização. Para comprovar a Parte 4, gravem uma nova demonstração após compilar e testar esta versão, mostrando cadastro, edição, remoção, rotação da tela e reabertura sem os itens apagados.
 
-A apresentação em sala também deve demonstrar ao vivo adicionar, editar, remover e fechar/reabrir o app.
+
 
 ## Créditos das fotos do catálogo
 
